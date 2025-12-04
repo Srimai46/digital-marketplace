@@ -17,6 +17,7 @@ export default function LoginPage() {
         <input name="email" placeholder="Email" />
         <input name="password" type="password" placeholder="Password" />
         <button type="submit">Login</button>
+        <button type="button" onClick={() => { window.location.href = '/register'; }}>Register</button>
       </form>
     </div>
   );

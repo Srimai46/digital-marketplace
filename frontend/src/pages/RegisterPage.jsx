@@ -28,6 +28,7 @@ export default function RegisterPage() {
           <option value="SELLER">SELLER</option>
         </select>
         <button type="submit">Register</button>
+        <button type="button" onClick={() => { window.location.href = '/login'; }}>Login</button>
       </form>
     </div>
   );

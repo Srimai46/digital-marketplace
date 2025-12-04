@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import PageLayout from '../components/Layout/PageLayout';
 import { getProduct } from '../services/productApi';
 import { listReviews, addReview } from '../services/reviewApi';
+import { createOrder } from '../services/orderApi';   // ✅ เพิ่ม import
 import { useAuth } from '../hooks/useAuth';
 
 export default function ProductDetailPage() {
@@ -41,6 +42,24 @@ export default function ProductDetailPage() {
             <a href={product.fileUrl} target="_blank" rel="noreferrer">
               ดูไฟล์/ตัวอย่าง
             </a>
+
+            {/* ================= BUY BUTTON ================= */}
+            {user?.role === 'BUYER' && (
+              <button
+                style={{ marginTop: 16 }}
+                onClick={async () => {
+                  try {
+                    const order = await createOrder({ productId: id, amount: product.price });
+                    alert('สั่งซื้อสำเร็จ! เลขที่คำสั่งซื้อ: ' + order.orderNumber);
+                    window.location.href = '/orders';
+                  } catch (err) {
+                    alert(err.response?.data?.message || 'ไม่สามารถสั่งซื้อได้');
+                  }
+                }}
+              >
+                ซื้อสินค้า
+              </button>
+            )}
           </div>
 
           {/* ================= RIGHT ================= */}

@@ -9,7 +9,7 @@ import { createProduct } from '../services/productApi';
 import { useSocket } from '../hooks/useSocket';
 
 export default function ProductListPage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,13 +27,13 @@ export default function ProductListPage() {
     <PageLayout
       header={<div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
         <strong>Digital Marketplace</strong>
-        <span>{user ? `Hi, ${user.username}` : 'Guest'}</span>
+        <span>{user ? `Hi, ${user.username} ` : 'Guest'} <button style={{ marginLeft: 12 }} onClick={() => { logout(); window.location.href = '/login'; }}>Logout</button></span>
       </div>}
       sidebar={<div>
         <div style={{ marginBottom: 12 }}>เมนู</div>
         <a href="/">สินค้าทั้งหมด</a><br />
-        <a href="/orders">คำสั่งซื้อของฉัน</a><br />
-        <a href="/dashboard">แดชบอร์ดผู้ขาย</a>
+        {user?.role !== 'SELLER' && <a href="/orders">คำสั่งซื้อของฉัน</a>}<br />
+        {user?.role === 'SELLER' && <a href="/dashboard">แดชบอร์ดผู้ขาย</a>}
       </div>}
     >
       {loading ? <div>กำลังโหลด...</div> : (
