@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================================
+// ENUMS
+// ==========================================================
+
+enum UserRole {
+  BUYER
+  SELLER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+  REFUNDED
+}
+
+// ==========================================================
+// MODELS
+// ==========================================================
+
+// 1. USER
+model User {
+  id         String    @id @default(uuid()) @db.VarChar(36)
+  username   String    @unique
+  email      String    @unique
+  password   String
+  role       UserRole  @default(BUYER)
+
+  createdAt  DateTime  @default(now()) @db.DateTime(0)
+  updatedAt  DateTime  @updatedAt @db.DateTime(0)
+
+  // Soft Delete
+  isDeleted  Boolean   @default(false)
+  deletedAt DateTime?
+
+  // Relations
+  products   Product[]
+  orders     Order[]   @relation("BuyerOrders")
+  reviews    Review[]
+
+  @@map("users")
+}
+
+// 2. PRODUCT
+model Product {
+  id          String    @id @default(uuid()) @db.VarChar(36)
+  title       String    @db.VarChar(255)
+  description String?
+  price       Decimal   @db.Decimal(10, 2)
+  fileUrl     String
+
+  createdAt   DateTime  @default(now()) @db.DateTime(0)
+  updatedAt   DateTime  @updatedAt @db.DateTime(0)
+
+  // Soft Delete
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+
+  // Owner (SELLER)
+  ownerId     String    @db.VarChar(36)
+  owner       User      @relation(fields: [ownerId], references: [id])
+
+  // Relations
+  orders      Order[]
+  reviews     Review[]
+
+  @@map("products")
+}
+
+// 3. ORDER
+model Order {
+  id           String       @id @default(uuid()) @db.VarChar(36)
+  orderNumber  String       @unique @default(cuid()) @db.VarChar(36)
+  amount       Decimal      @db.Decimal(10, 2)
+  status       OrderStatus  @default(PENDING)
+  orderDate    DateTime     @default(now()) @db.DateTime(0)
+
+  // Soft Delete
+  isDeleted    Boolean      @default(false)
+  deletedAt    DateTime?
+
+  // Buyer
+  buyerId      String       @db.VarChar(36)
+  buyer        User         @relation("BuyerOrders", fields: [buyerId], references: [id])
+
+  // Product
+  productId    String       @db.VarChar(36)
+  product      Product     @relation(fields: [productId], references: [id])
+
+  @@map("orders")
+}
+
+// 4. REVIEW
+model Review {
+  id           String    @id @default(uuid()) @db.VarChar(36)
+  rating       Int       @db.TinyInt
+  comment      String?
+  reviewDate   DateTime  @default(now()) @db.DateTime(0)
+
+  // Reviewer
+  reviewerId   String    @db.VarChar(36)
+  reviewer     User      @relation(fields: [reviewerId], references: [id])
+
+  // Product
+  productId    String    @db.VarChar(36)
+  product      Product   @relation(fields: [productId], references: [id])
+
+  @@unique([reviewerId, productId])
+  @@map("reviews")
+}
